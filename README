@@ -1,0 +1,54 @@
+A Python helper module to have protected web APIs. This uses a simple secret key, without which the web APIs will restrict users. Thus, only authenticated users possessing the secret key can use the a web API.
+
+This uses HMAC MD5, with a secret key to work.
+
+Quickstart
+==========
+import web_auth_helper
+SECRET = 'My Secret key'
+
+# The encoded message.
+s = web_auth_helper.encode(serializable_python_object, SECRET)
+
+# Decode the encoded message.
+original_object = web_auth_helper.decode(s, SECRET)
+
+
+A sample usage is given below (with respect to Django)
+======================================================
+SECRET = 'This is a sample string used as secret key.'
+
+------
+
+from web_auth_helper import encode
+import urlib
+
+url = 'http://example.com/api/publish-stream/'
+params = { \
+    'id': 111, \
+    'content': 'This is a sample content.' \
+}
+
+signed_request = encode(params, SECRET)
+
+r = urllib.urlopen(url, urllib.urlencode({'signed_request': signed_request}))
+r.read()
+
+------
+
+from web_auth_helper import decode, DecodeException
+
+@csrf_exempt
+def publish_stream_handler(request):
+    if request.method == 'POST':
+        if not request.POST.has_key('signed_request'):
+            return HttpResponseBadRequest('Required parameters not provided.')
+        else:
+            try:
+                request_params = decode(request.POST['signed_request'], SECRET)
+            except DecodeException:
+                return HttpResponseForbidden('Your request is not allowed.')
+            return _do_something_with_params(request_params)
+    else:
+        return HttpResponseNotAllowed(['POST'])
+
