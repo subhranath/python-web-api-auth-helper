@@ -18,7 +18,7 @@ A sample usage is given below (with respect to Django)
 ======================================================
 SECRET = 'This is a sample string used as secret key.'
 
-------
+------------------------------------------------------
 
 from web_auth_helper import encode
 import urlib
@@ -34,7 +34,7 @@ signed_request = encode(params, SECRET)
 r = urllib.urlopen(url, urllib.urlencode({'signed_request': signed_request}))
 r.read()
 
-------
+------------------------------------------------------
 
 from web_auth_helper import decode, DecodeException
 
@@ -52,3 +52,16 @@ def publish_stream_handler(request):
     else:
         return HttpResponseNotAllowed(['POST'])
 
+------------------------------------------------------
+
+
+Using the 'web_api' decorator in Django views (without any extra modification)
+==============================================================================
+from django_helper import web_api
+
+@csrf_exempt
+@web_api(request_parameter_name='signed_request', secret_key=SECRET)
+def publish_stream_handler(request):
+    # request.REQUEST and, request.GET or request.POST dictionaries updated
+    # to contain the encoded parameters.
+    return _do_whatever_required(request)

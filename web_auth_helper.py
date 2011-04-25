@@ -18,7 +18,8 @@ def encode(object_to_encode, key):
     """
     serialized_obj_str = pickle.dumps(object_to_encode)
     hmac_obj = hmac.new(key, msg=serialized_obj_str)
-    signed_request = hmac_obj.digest() + '.' + base64.b64encode(serialized_obj_str)
+    signed_request = base64.b64encode(hmac_obj.digest()) + '.' + \
+                     base64.b64encode(serialized_obj_str)
     return signed_request
 
 def decode(signed_request, key):
@@ -42,7 +43,7 @@ def decode(signed_request, key):
     
     # Get the signature generated using the serialized object and
     # the key.
-    expected_sig = hmac.new(key, msg=decoded_obj_str).digest()
+    expected_sig = base64.b64encode(hmac.new(key, msg=decoded_obj_str).digest())
     
     # If both the signatures matches.
     if sig == expected_sig:
